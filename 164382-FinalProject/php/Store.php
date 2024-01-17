@@ -70,7 +70,7 @@ class Store {
 								'.$names_prod[$product_id].'
 								</div>
 								<div class="imgbox">
-								<img src='.$pics_prod[$product_id].' alt="CSP">
+								<img src="data:image/png;base64,'.base64_encode($pics_prod[$product_id]).'" alt="CSP"/>
 								</div>
 								<div>
 								ilosc = 

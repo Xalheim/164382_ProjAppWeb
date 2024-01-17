@@ -58,11 +58,11 @@ Class Product {
 	function AddProduct() {
 		$Admin = new Admin();
 		$status_login = $Admin->CheckLogin();															// Sprawdz czy podano dane logowania, oraz ich poprawność
-
+		
 		if ($status_login == 1) {																// Czy pomyślnie się zalogowano?
 			echo "<h3> Strona dodawania Produktu</h3>";
 			if (isset($_POST['create_title']) && isset($_POST['create_desc']) && isset($_POST['create_expdate']) && isset($_POST['create_netto']) && isset($_POST['create_vat']) &&
-						isset($_POST['create_amount']) && isset($_POST['create_cat']) && isset($_POST['create_gab']) && isset($_POST['create_pic'])) {																					// czy zostały podane wszystkie dane?
+						isset($_POST['create_amount']) && isset($_POST['create_cat']) && isset($_POST['create_gab']) && isset($_FILES['create_pic'])) {																					// czy zostały podane wszystkie dane?
 				$curdate = date("Y-m-d");
 				$prod_date = date("Y-m-d", strtotime($_POST['create_expdate']));
 				if (strtotime($curdate) > strtotime($prod_date) || $_POST['create_amount'] <= 0) {
@@ -72,9 +72,13 @@ Class Product {
 					$_POST['create_avail'] = 1;
 				}
 
+				$image = $_FILES['create_pic'];
+				$blob = addslashes(file_get_contents($image['tmp_name']));
+
+
 				$query = "INSERT INTO product_list (title, description, creation_date, modification_date, expiration_date, price_netto, vat, amount, availability, category, gabaryt, picture)
 						  VALUES ('".$_POST['create_title']."', '".$_POST['create_desc']."', '".$curdate."', '".$curdate."', '".$_POST['create_expdate']."', '".$_POST['create_netto']."', '".$_POST['create_vat']."',
-								  '".$_POST['create_amount']."', '".$_POST['create_avail']."', '".$_POST['create_cat']."', '".$_POST['create_gab']."', '".$_POST['create_pic']."') LIMIT 1";																			// Wprowadź nowe dane do tablicy product_list
+								  '".$_POST['create_amount']."', '".$_POST['create_avail']."', '".$_POST['create_cat']."', '".$_POST['create_gab']."', '".$blob."') LIMIT 1";																			// Wprowadź nowe dane do tablicy product_list
 				mysqli_query($GLOBALS['mysqli'], $query);																												// Wykonaj query do bazy danych
 				header("Location: http://localhost/moj_projekt/index.php?idp=-11");																						// Powrót do Panelu Admina Produktów
 				die();
@@ -100,7 +104,7 @@ Class Product {
 		if ($status_login == 1) {													// Czy pomyślnie się zalogowano?
 			echo "<h3> Strona edycji Produktu </h3>";
 			if (isset($_POST['edit_id']) && isset($_POST['edit_title']) && isset($_POST['edit_desc']) && isset($_POST['edit_expdate']) && isset($_POST['edit_netto']) && isset($_POST['edit_vat']) &&
-						isset($_POST['edit_amount']) && isset($_POST['edit_cat']) && isset($_POST['edit_gab']) && isset($_POST['edit_pic'])) {																							// czy zostały podane wszystkie dane?
+						isset($_POST['edit_amount']) && isset($_POST['edit_cat']) && isset($_POST['edit_gab']) && isset($_FILES['edit_pic'])) {																							// czy zostały podane wszystkie dane?
 				$curdate = date("Y-m-d");
 				$prod_date = date("Y-m-d", strtotime($_POST['edit_expdate']));
 				if (strtotime($curdate) > strtotime($prod_date) || $_POST['edit_amount'] <= 0) {
@@ -110,9 +114,12 @@ Class Product {
 					$_POST['edit_avail'] = 1;
 				}
 				
+				$image = $_FILES['edit_pic'];
+				$blob = addslashes(file_get_contents($image['tmp_name']));
+				
 				$query = "UPDATE product_list SET title = '".$_POST['edit_title']."', description = '".$_POST['edit_desc']."', modification_date = '".$curdate."', expiration_date = '".$_POST['edit_expdate']."',
 								  price_netto = '".$_POST['edit_netto']."', vat = '".$_POST['edit_vat']."', amount = '".$_POST['edit_amount']."', availability = '".$_POST['edit_avail']."', category = '".$_POST['edit_cat']."', gabaryt = '".$_POST['edit_gab']."',
-								  picture= '".$_POST['edit_pic']."'
+								  picture= '".$blob."'
 						  WHERE product_list.id = '".$_POST['edit_id']."' LIMIT 1";			// Edytuj dane w product_list tabeli o odpowiednim id
 				mysqli_query($GLOBALS['mysqli'], $query);							// Wykonaj query do bazy danych
 				header("Location: http://localhost/moj_projekt/index.php?idp=-11");	// Powrót do Panelu Admina Produktów
@@ -173,7 +180,7 @@ Class Product {
 						<tr><td class="log4_t">[amount]</td><td><input type="text" name="create_amount" class="tworzenieproduktu" /></td></tr>
 						<tr><td class="log4_t">[category]</td><td><input type="text" name="create_cat" class="tworzenieproduktu" /></td></tr>
 						<tr><td class="log4_t">[gabaryt]</td><td><input type="text" name="create_gab" class="tworzenieproduktu" /></td></tr>
-						<tr><td class="log4_t">[picture]</td><td><input type="text" name="create_pic" class="tworzenieproduktu" /></td></tr>
+						<tr><td class="log4_t">[picture]</td><td><input type="file" name="create_pic" accept="image/*" class="tworzenieproduktu" /></td></tr>
 						<tr><td> </td><td><input type="submit" name="x1_submit" class="tworzenieproduktu" value="zatwierdz" /></td></tr>
 					</table>
 				</form>
@@ -202,7 +209,7 @@ Class Product {
 						<tr><td class="log4_t">[amount]</td><td><input type="text" name="edit_amount" class="edycjaproduktu" /></td></tr>
 						<tr><td class="log4_t">[category]</td><td><input type="text" name="edit_cat" class="edycjaproduktu" /></td></tr>
 						<tr><td class="log4_t">[gabaryt]</td><td><input type="text" name="edit_gab" class="edycjaproduktu" /></td></tr>
-						<tr><td class="log4_t">[picture]</td><td><input type="text" name="edit_pic" class="edycjaproduktu" /></td></tr>
+						<tr><td class="log4_t">[picture]</td><td><input type="file" name="edit_pic" accept="image/*" class="edycjaproduktu" /></td></tr>
 						<tr><td> </td><td><input type="submit" name="x1_submit" class="edycjaproduktu" value="zatwierdz" /></td></tr>
 					</table>
 				</form>
